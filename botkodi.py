@@ -71,6 +71,12 @@ async def main():
     )
 
 if __name__ == '__main__':
-    # Render platformasida mavjud bo'lgan event loopni to'g'ri ishlatish uchun
+    # Mavjud event loopni olish
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())  # Asinxron tarzda `main()` funksiyasini ishga tushirish
+
+    # Agar event loop allaqachon ishga tushirilgan bo'lsa, yangi ishga tushirishni oldini olish
+    if loop.is_running():
+        print("Event loop already running.")
+        loop.create_task(main())  # Boshqa asinxron vazifani ishga tushirish
+    else:
+        loop.run_until_complete(main())  # Asinxron tarzda `main()` funksiyasini ishga tushirish
