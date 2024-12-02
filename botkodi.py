@@ -19,9 +19,9 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 if not WEBHOOK_URL or not TELEGRAM_TOKEN:
     raise ValueError("WEBHOOK_URL or TELEGRAM_TOKEN is missing")
 
-# OpenAI bilan so'rov yuborish
-def chat_with_openai(message_text):
-    response = openai.Completion.create(
+# OpenAI bilan so'rov yuborish (async funktsiya bo'lishi kerak)
+async def chat_with_openai(message_text):
+    response = await openai.Completion.create(
         model="gpt-3.5-turbo",  # Yangi modelni tanlash
         messages=[{"role": "user", "content": message_text}],
         max_tokens=150
@@ -35,7 +35,7 @@ async def start(update: Update, context: CallbackContext):
 # Botga xabar yuborish
 async def handle_message(update: Update, context: CallbackContext):
     user_message = update.message.text
-    bot_reply = chat_with_openai(user_message)
+    bot_reply = await chat_with_openai(user_message)  # await qo'shildi
     await update.message.reply_text(bot_reply)
 
 # Webhookni sozlash
@@ -72,4 +72,4 @@ async def main():
 if __name__ == '__main__':
     # Application bilan event loopni boshqarish
     import asyncio
-    asyncio.get_event_loop().run_until_complete(main())
+    asyncio.run(main())  # async funktsiya ishlatish uchun asyncio.run() ishlatish
