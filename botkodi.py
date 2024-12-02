@@ -43,7 +43,7 @@ async def main():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     # Render uchun webhook sozlash
-    webhook_url = f"https://<SIZNING_DOMAIN>/{TELEGRAM_TOKEN}"  # <SIZNING_DOMAIN> ni o'zgartiring
+    webhook_url = f"https://aibot-9htc.onrender.com/{TELEGRAM_TOKEN}"  # <SIZNING_DOMAIN> ni o'zgartiring
     await application.run_webhook(
         listen="0.0.0.0",  # Barcha IP-manzillardan tinglash
         port=PORT,         # Render bergan port
