@@ -62,7 +62,7 @@ async def main():
     # Webhookni sozlash va botni boshlash
     await application.run_webhook(
         listen="0.0.0.0",  # Botni barcha IP manzillardan eshitish
-        port=int(os.getenv("PORT", 5000)),  # Portni sozlash
+        port=int(os.getenv("PORT", 5000)),  # Portni sozlash (Render uchun kerakli port)
         url_path=TELEGRAM_TOKEN  # Webhook uchun URL yo'lini sozlash
     )
 
@@ -70,4 +70,4 @@ if __name__ == '__main__':
     # Event loopni boshqarishdan saqlanish
     import asyncio
     # Telegram botni ishga tushirish (asyncio.run() ishlatmasdan)
-    asyncio.run(main())
+    main()
