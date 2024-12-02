@@ -3,7 +3,6 @@ import os
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
-import asyncio
 
 # .env faylini yuklash
 load_dotenv()
@@ -71,12 +70,6 @@ async def main():
     )
 
 if __name__ == '__main__':
-    # Mavjud event loopni olish
-    loop = asyncio.get_event_loop()
-
-    # Agar event loop allaqachon ishga tushirilgan bo'lsa, yangi ishga tushirishni oldini olish
-    if loop.is_running():
-        print("Event loop already running.")
-        loop.create_task(main())  # Boshqa asinxron vazifani ishga tushirish
-    else:
-        loop.run_until_complete(main())  # Asinxron tarzda `main()` funksiyasini ishga tushirish
+    # run_webhookni to'g'ridan-to'g'ri ishga tushiring
+    import asyncio
+    asyncio.run(main())  # Asinxron tarzda `main()` funksiyasini ishga tushirish
