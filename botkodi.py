@@ -1,9 +1,10 @@
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 import openai
 import os
 from dotenv import load_dotenv
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 
-# .env faylidan kalitni yuklash
+# .env faylini yuklash
 load_dotenv()
 
 # OpenAI API kaliti
@@ -21,17 +22,17 @@ def chat_with_openai(message_text):
     )
     return response['choices'][0]['message']['content'].strip()
 
-
 # Botni boshlash
-async def start(update, context):
+async def start(update: Update, context: CallbackContext):
     await update.message.reply_text('Salom! Men OpenAI yordamida javob beraman. Savol bering.')
 
 # Botga xabar yuborish
-async def handle_message(update, context):
+async def handle_message(update: Update, context: CallbackContext):
     user_message = update.message.text
     bot_reply = chat_with_openai(user_message)
     await update.message.reply_text(bot_reply)
 
+# Botni ishga tushirish
 def main():
     # Application ob'ektini yaratish
     application = Application.builder().token(TELEGRAM_TOKEN).build()
@@ -42,8 +43,15 @@ def main():
     # Xabarlarni ishlash
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Pollingni ishlatish
-    application.run_polling()
+    # Portni olish (Render platformasida kerakli portni o'rnatish)
+    port = int(os.getenv("PORT", 5000))  # Agar PORT o'zgaruvchisi mavjud bo'lmasa, 5000 port ishlatiladi
+
+    # Webhookni sozlash va botni boshlash
+    application.run_webhook(
+        listen="0.0.0.0",  # Botni barcha IP manzillardan eshitish
+        port=port,         # Portni sozlash
+        url_path=TELEGRAM_TOKEN  # Webhook uchun URL yo'lini sozlash
+    )
 
 if __name__ == '__main__':
     main()
