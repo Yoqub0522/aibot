@@ -70,6 +70,6 @@ async def main():
     )
 
 if __name__ == '__main__':
-    # Here, we do not use asyncio.run(main()) directly, as the framework manages the event loop
+    # Bu yerda asyncio.run() ishlatish tavsiya etiladi
     import asyncio
-    asyncio.get_event_loop().run_until_complete(main())
+    asyncio.run(main())  # asyncio.run() bu yerda ishlatiladi
