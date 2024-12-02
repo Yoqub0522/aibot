@@ -1,10 +1,9 @@
 import openai
-import os
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 
 # OpenAI API kaliti
-openai.api_key = 'sk-svcacct-CndFXdkK-T2ZpdszKqvFchzC-U2TokrbmHcojRZBHkZgNTUGnBTVjUWdLjkjQkLUT3BlbkFJsn0V3cPzlUMhmVITJfv0pMNc2w2hXV72pVbWT3Dyu8gh75LtPlmEP9A_oZEA_vkA'
+openai.api_key = 'your-openai-api-kesk-svcacct-CndFXdkK-T2ZpdszKqvFchzC-U2TokrbmHcojRZBHkZgNTUGnBTVjUWdLjkjQkLUT3BlbkFJsn0V3cPzlUMhmVITJfv0pMNc2w2hXV72pVbWT3Dyu8gh75LtPlmEP9A_oZEA_vkAy'
 
 # Telegram bot tokeni
 TELEGRAM_TOKEN = '8178082976:AAGzrbAKLoCYDQmS-nPhm_BE5BlDxzb2TpI'
@@ -39,11 +38,7 @@ def main():
     # Xabarlarni ishlash
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Agar webhook ishlatmoqchi bo'lsangiz:
-    port = int(os.getenv('PORT', 5000))  # Portni atrof-muhitdan olish
-    application.run_webhook(listen="0.0.0.0", port=port, url_path=TELEGRAM_TOKEN)  # Webhookni sozlash
-
-    # Pollingni ishlatishda portni belgilash zarur emas
+    # Pollingni ishlatish
     application.run_polling()
 
 if __name__ == '__main__':
