@@ -47,7 +47,7 @@ async def set_webhook(application: Application):
     print(f"Webhook o'rnatildi: {webhook_url}")
 
 # Botni ishga tushirish
-def main():
+async def main():
     # Application ob'ektini yaratish
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
@@ -58,18 +58,17 @@ def main():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     # Webhookni sozlash
-    import asyncio
-    asyncio.run(set_webhook(application))  # Webhookni o'rnatish
+    await set_webhook(application)  # Webhookni o'rnatish
 
     # Portni olish (Render platformasida kerakli portni o'rnatish)
     port = int(os.getenv("PORT", 5000))  # Agar PORT o'zgaruvchisi mavjud bo'lmasa, 5000 port ishlatiladi
 
     # Webhookni sozlash va botni boshlash
-    application.run_webhook(
+    await application.run_webhook(
         listen="0.0.0.0",  # Botni barcha IP manzillardan eshitish
         port=port,         # Portni sozlash
         url_path=TELEGRAM_TOKEN  # Webhook uchun URL yo'lini sozlash
     )
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())  # Asinxron tarzda `main()` funksiyasini ishga tushirish
