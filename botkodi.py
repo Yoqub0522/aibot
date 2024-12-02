@@ -1,12 +1,16 @@
-import openai
-from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
+import openai
+import os
+from dotenv import load_dotenv
+
+# .env faylidan kalitni yuklash
+load_dotenv()
 
 # OpenAI API kaliti
-openai.api_key = 'sk-svcacct-CndFXdkK-T2ZpdszKqvFchzC-U2TokrbmHcojRZBHkZgNTUGnBTVjUWdLjkjQkLUT3BlbkFJsn0V3cPzlUMhmVITJfv0pMNc2w2hXV72pVbWT3Dyu8gh75LtPlmEP9A_oZEA_vkA'
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Telegram bot tokeni
-TELEGRAM_TOKEN = '8178082976:AAGzrbAKLoCYDQmS-nPhm_BE5BlDxzb2TpI'
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 
 # OpenAI bilan so'rov yuborish
 def chat_with_openai(message_text):
@@ -18,16 +22,15 @@ def chat_with_openai(message_text):
     return response.choices[0].text.strip()
 
 # Botni boshlash
-async def start(update: Update, context: CallbackContext):
+async def start(update, context):
     await update.message.reply_text('Salom! Men OpenAI yordamida javob beraman. Savol bering.')
 
 # Botga xabar yuborish
-async def handle_message(update: Update, context: CallbackContext):
+async def handle_message(update, context):
     user_message = update.message.text
     bot_reply = chat_with_openai(user_message)
     await update.message.reply_text(bot_reply)
 
-# Botni ishga tushirish
 def main():
     # Application ob'ektini yaratish
     application = Application.builder().token(TELEGRAM_TOKEN).build()
