@@ -17,11 +17,11 @@ openai.api_key = OPENAI_API_KEY
 
 # OpenAI bilan muloqot qilish funksiyasi
 async def chat_with_openai(message_text):
-    response = await openai.ChatCompletion.acreate(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": message_text}],
-        max_tokens=150
-    )
+    # Asynchronous OpenAI API calls via to_thread
+    response = await asyncio.to_thread(openai.ChatCompletion.create,
+                                        model="gpt-3.5-turbo",
+                                        messages=[{"role": "user", "content": message_text}],
+                                        max_tokens=150)
     return response['choices'][0]['message']['content'].strip()
 
 # /start komandasi uchun handler
@@ -43,14 +43,15 @@ async def main():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     # Render uchun webhook sozlash
+    webhook_url = f"https://<SIZNING_DOMAIN>/{TELEGRAM_TOKEN}"  # <SIZNING_DOMAIN> ni o'zgartiring
     await application.run_webhook(
         listen="0.0.0.0",  # Barcha IP-manzillardan tinglash
         port=PORT,         # Render bergan port
         url_path=TELEGRAM_TOKEN,
-        webhook_url=f"https://<SIZNING_DOMAIN>/ {TELEGRAM_TOKEN}"  # HTTPS domeningizni qo'shing
+        webhook_url=webhook_url
     )
 
-if name == 'main':
+if __name__ == '__main__':
     try:
         asyncio.run(main())
     except RuntimeError as e:
