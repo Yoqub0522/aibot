@@ -43,13 +43,12 @@ async def main():
         url_path=TELEGRAM_TOKEN
     )
 
-# Check if the event loop is already running before calling asyncio.run
+# Run without asyncio.run() since Render manages the loop
 if __name__ == '__main__':
     try:
-        # Check if an event loop is already running (like in Render's environment)
         loop = asyncio.get_event_loop()
         if loop.is_running():
-            # If a loop is already running, we can directly run the main function
+            # If a loop is already running (like in Render), just create the task
             loop.create_task(main())
         else:
             # If no loop is running, start a new loop
