@@ -29,6 +29,7 @@ async def handle_message(update: Update, context: CallbackContext):
     bot_reply = await chat_with_openai(user_message)
     await update.message.reply_text(bot_reply)
 
+# Main function for the bot
 async def main():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
@@ -43,12 +44,14 @@ async def main():
         url_path=TELEGRAM_TOKEN
     )
 
-# Run without asyncio.run() since Render manages the loop
+# Run the bot in Render's environment without managing the event loop manually
 if __name__ == '__main__':
     try:
+        # Get the existing event loop from the environment (do not create a new one)
         loop = asyncio.get_event_loop()
+
         if loop.is_running():
-            # If a loop is already running (like in Render), just create the task
+            # If a loop is already running (like in Render), simply create a task
             loop.create_task(main())
         else:
             # If no loop is running, start a new loop
