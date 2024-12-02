@@ -1,3 +1,4 @@
+import openai
 import os
 from dotenv import load_dotenv
 from telegram import Update
