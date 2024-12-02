@@ -15,11 +15,12 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 # OpenAI bilan so'rov yuborish
 def chat_with_openai(message_text):
     response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=message_text,
+        model="gpt-3.5-turbo",  # Yangi modelni tanlash
+        messages=[{"role": "user", "content": message_text}],
         max_tokens=150
     )
-    return response.choices[0].text.strip()
+    return response['choices'][0]['message']['content'].strip()
+
 
 # Botni boshlash
 async def start(update, context):
