@@ -1,4 +1,5 @@
 import openai
+import os
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 
@@ -38,7 +39,11 @@ def main():
     # Xabarlarni ishlash
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Botni boshlash
+    # Agar webhook ishlatmoqchi bo'lsangiz:
+    port = int(os.getenv('PORT', 5000))  # Portni atrof-muhitdan olish
+    application.run_webhook(listen="0.0.0.0", port=port, url_path=TELEGRAM_TOKEN)  # Webhookni sozlash
+
+    # Pollingni ishlatishda portni belgilash zarur emas
     application.run_polling()
 
 if __name__ == '__main__':
