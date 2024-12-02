@@ -70,6 +70,6 @@ async def main():
     )
 
 if __name__ == '__main__':
-    # run_webhookni to'g'ridan-to'g'ri ishga tushiring
+    # To'g'ridan-to'g'ri `main` funksiyasini ishga tushiring, `asyncio.run()` ishlatmasdan
     import asyncio
-    asyncio.run(main())  # Asinxron tarzda `main()` funksiyasini ishga tushirish
+    asyncio.create_task(main())
