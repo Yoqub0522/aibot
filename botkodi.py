@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
+import asyncio
 
 # .env faylini yuklash
 load_dotenv()
@@ -67,7 +68,5 @@ async def main():
     )
 
 if __name__ == '__main__':
-    # Event loopni boshqarishdan saqlanish
-    import asyncio
-    # Telegram botni ishga tushirish (asyncio.run() ishlatmasdan)
-    main()
+    # asyncio event loopni ishga tushirish
+    asyncio.run(main())  # async funktsiyalarni to'g'ri chaqirish
