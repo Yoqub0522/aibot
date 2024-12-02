@@ -1,4 +1,5 @@
 import os
+import asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 import openai
@@ -42,6 +43,16 @@ async def main():
         url_path=TELEGRAM_TOKEN
     )
 
+# Check if the event loop is already running before calling asyncio.run
 if __name__ == '__main__':
-    import asyncio
-    asyncio.run(main())
+    try:
+        # Check if an event loop is already running (like in Render's environment)
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # If a loop is already running, we can directly run the main function
+            loop.create_task(main())
+        else:
+            # If no loop is running, start a new loop
+            asyncio.run(main())
+    except RuntimeError as e:
+        print(f"Error: {e}")
