@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
+import asyncio
 
 # .env faylini yuklash
 load_dotenv()
@@ -38,6 +39,13 @@ async def handle_message(update: Update, context: CallbackContext):
     bot_reply = chat_with_openai(user_message)
     await update.message.reply_text(bot_reply)
 
+# Webhookni sozlash
+async def set_webhook(application: Application):
+    webhook_url = f"{WEBHOOK_URL}/{TELEGRAM_TOKEN}"  # Webhook URL to'liq manzili
+    # Webhookni o'rnatish
+    await application.bot.set_webhook(url=webhook_url)
+    print(f"Webhook o'rnatildi: {webhook_url}")
+
 # Botni ishga tushirish
 def main():
     # Application ob'ektini yaratish
@@ -49,8 +57,9 @@ def main():
     # Xabarlarni ishlash
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Webhookni sozlash va botni boshlash
-    application.bot.set_webhook(url=WEBHOOK_URL + f'/{TELEGRAM_TOKEN}')
+    # Webhookni sozlash
+    import asyncio
+    asyncio.run(set_webhook(application))  # Webhookni o'rnatish
 
     # Portni olish (Render platformasida kerakli portni o'rnatish)
     port = int(os.getenv("PORT", 5000))  # Agar PORT o'zgaruvchisi mavjud bo'lmasa, 5000 port ishlatiladi
