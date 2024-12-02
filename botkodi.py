@@ -1,25 +1,46 @@
-import asyncio
-from flask import Flask
-from telegram import Bot
-from telegram.ext import Application, CommandHandler
+import openai
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
-app = Flask(__name__)
+# OpenAI API kaliti
+openai.api_key = 'sk-svcacct-CndFXdkK-T2ZpdszKqvFchzC-U2TokrbmHcojRZBHkZgNTUGnBTVjUWdLjkjQkLUT3BlbkFJsn0V3cPzlUMhmVITJfv0pMNc2w2hXV72pVbWT3Dyu8gh75LtPlmEP9A_oZEA_vkA'
 
-async def start(update, context):
-    await update.message.reply_text('Salom!')
+# Telegram bot tokeni
+TELEGRAM_TOKEN = '8178082976:AAGzrbAKLoCYDQmS-nPhm_BE5BlDxzb2TpI'
 
-async def main():
-    application = Application.builder().token("YOUR_BOT_TOKEN").build()
-    application.add_handler(CommandHandler("start", start))
+# OpenAI bilan so'rov yuborish
+def chat_with_openai(message_text):
+    response = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=message_text,
+        max_tokens=150
+    )
+    return response.choices[0].text.strip()
 
-    # Botni fon ishida ishlatish
-    await application.run_polling()
+# Botni boshlash
+def start(update: Update, context: CallbackContext):
+    update.message.reply_text('Salom! Men OpenAI yordamida javob beraman. Savol bering.')
 
-@app.route('/')
-def hello_world():
-    return "Salom, dunyo!"
+# Botga xabar yuborish
+def handle_message(update: Update, context: CallbackContext):
+    user_message = update.message.text
+    bot_reply = chat_with_openai(user_message)
+    update.message.reply_text(bot_reply)
 
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.create_task(main())  # Botni fon ishida ishga tushiring
-    app.run(host='0.0.0.0', port=8080)
+# Botni ishga tushirish
+def main():
+    updater = Updater(TELEGRAM_TOKEN)
+    dispatcher = updater.dispatcher
+
+    # Komandalar
+    dispatcher.add_handler(CommandHandler("start", start))
+
+    # Xabarlarni ishlash
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+
+    # Botni boshlash
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
