@@ -70,6 +70,6 @@ async def main():
     )
 
 if __name__ == '__main__':
-    # To'g'ridan-to'g'ri `main` funksiyasini ishga tushiring, `asyncio.run()` ishlatmasdan
+    # `asyncio.run()` orqali to'g'ridan-to'g'ri `main` funksiyasini ishga tushiramiz
     import asyncio
-    asyncio.create_task(main())
+    asyncio.run(main())  # main() funktsiyasini async tarzda chaqiramiz
