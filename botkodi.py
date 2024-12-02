@@ -68,5 +68,6 @@ async def main():
     )
 
 if __name__ == '__main__':
-    # asyncio event loopni ishga tushirish
-    asyncio.run(main())  # async funktsiyalarni to'g'ri chaqirish
+    # asyncio event loopni ishlatishdan saqlanish
+    application = Application.builder().token(TELEGRAM_TOKEN).build()
+    application.run_polling()  # Pollingni ishlatish
