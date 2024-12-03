@@ -7,6 +7,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 import logging
 import json
+import asyncio
 
 # Load environment variables from the .env file (if running locally)
 load_dotenv()
@@ -64,8 +65,8 @@ async def start(update: Update, context: CallbackContext) -> None:
 
 # Function to set up the webhook for Telegram
 def set_webhook():
-    # Replace with your actual Flask app URL
-    WEBHOOK_URL = f'https://your-flask-app-url/{TELEGRAM_API_TOKEN}'  
+    # Replace with your actual Flask app URL from ngrok or your hosted app
+    WEBHOOK_URL = f'https://your-ngrok-url.ngrok.io/{TELEGRAM_API_TOKEN}'  # Example using ngrok URL
     set_webhook_url = f'https://api.telegram.org/bot{TELEGRAM_API_TOKEN}/setWebhook?url={WEBHOOK_URL}'
     response = requests.get(set_webhook_url)
     print(f"Webhook sozlash javobi: {response.text}")  # Response from the setWebhook call
@@ -76,7 +77,7 @@ def webhook():
     json_str = request.get_data().decode('UTF-8')  # Incoming JSON data
     update = Update.de_json(json.loads(json_str), None)  # Convert JSON to Python object
     if application:
-        application.process_update(update)  # Process the update with the Telegram bot application
+        asyncio.run(application.process_update(update))  # Process the update with the Telegram bot application
     return 'OK', 200
 
 # Main function to set up the Telegram bot and Flask app
