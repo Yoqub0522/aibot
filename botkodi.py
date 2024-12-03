@@ -1,34 +1,44 @@
 import os
 import openai
+from dotenv import load_dotenv
 import requests
-import json
 from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
+import logging
 
-# OpenAI API key and Telegram API token
-openai.api_key = os.getenv('sk-svcacct-CndFXdkK-T2ZpdszKqvFchzC-U2TokrbmHcojRZBHkZgNTUGnBTVjUWdLjkjQkLUT3BlbkFJsn0V3cPzlUMhmVITJfv0pMNc2w2hXV72pVbWT3Dyu8gh75LtPlmEP9A_oZEA_vkA')
-TELEGRAM_API_TOKEN = os.getenv('7761761615:AAGsS0KKBO8T-MVBsfsHHHMC6BMoqY4OTts')
+# Load environment variables from the .env file (if running locally)
+load_dotenv()
 
+# Retrieve the API tokens from environment variables
+TELEGRAM_API_TOKEN = os.getenv('TELEGRAM_API_TOKEN')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
+# Ensure the environment variables are set
 if TELEGRAM_API_TOKEN is None:
     raise ValueError("Telegram API token is not set!")
+if OPENAI_API_KEY is None:
+    raise ValueError("OpenAI API key is not set!")
 
-# Flask app initialization
+# Set OpenAI API key
+openai.api_key = OPENAI_API_KEY
+
+# Initialize Flask app
 app = Flask(__name__)
 
-# Telegram bot application object
-application = None  # Global variable to hold the application object
+# Initialize Telegram application
+application = None  # Will be set in the main function
 
-# Flask routes
+# Flask endpoint to check if the server is running
 @app.route('/')
 def home():
     return "Salom! Flask serveri ishlamoqda."
 
-# OpenAI API interaction
+# Function to generate a response from OpenAI's API
 def generate_openai_response(prompt: str) -> str:
     try:
         response = openai.Completion.create(
-            engine="text-davinci-003",  # or another model you prefer
+            engine="text-davinci-003",  # You can use other models like 'gpt-3.5-turbo' if needed
             prompt=prompt,
             max_tokens=150
         )
@@ -36,7 +46,7 @@ def generate_openai_response(prompt: str) -> str:
     except Exception as e:
         return f"Xatolik yuz berdi: {str(e)}"
 
-# Handle messages from users on Telegram
+# Handler to process incoming messages from Telegram users
 async def handle_message(update: Update, context: CallbackContext) -> None:
     user_message = update.message.text  # User's message
     print(f"Foydalanuvchidan xabar: {user_message}")
@@ -44,44 +54,47 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
     # Get response from OpenAI
     openai_response = generate_openai_response(user_message)
     
-    # Send OpenAI response back to the user
+    # Send OpenAI response to the user
     await update.message.reply_text(openai_response)
 
-# /start command handler
+# Command handler for the /start command
 async def start(update: Update, context: CallbackContext) -> None:
     await update.message.reply_text("Salom! Men OpenAI yordamida ishlovchi botman. Savollarni berishingiz mumkin.")
 
-# Set webhook for Telegram
+# Function to set up the webhook for Telegram
 def set_webhook():
-    WEBHOOK_URL = f'https://your-flask-server-url.com/{TELEGRAM_API_TOKEN}'
+    WEBHOOK_URL = f'https://your-flask-app-url/{TELEGRAM_API_TOKEN}'  # Replace with your actual Flask app URL
     set_webhook_url = f'https://api.telegram.org/bot{TELEGRAM_API_TOKEN}/setWebhook?url={WEBHOOK_URL}'
     response = requests.get(set_webhook_url)
-    print(f"Webhook sozlash javobi: {response.text}")  # Check response from Telegram
+    print(f"Webhook sozlash javobi: {response.text}")  # Response from the setWebhook call
 
-# Webhook route to handle incoming updates
+# Webhook endpoint for handling Telegram updates
 @app.route(f'/{TELEGRAM_API_TOKEN}', methods=['POST'])
 def webhook():
-    json_str = request.get_data().decode('UTF-8')  # Get JSON data from the request
+    json_str = request.get_data().decode('UTF-8')  # Incoming JSON data
     update = Update.de_json(json.loads(json_str), None)  # Convert JSON to Python object
     if application:
-        application.process_update(update)  # Process the update with Telegram application
+        application.process_update(update)  # Process the update with the Telegram bot application
     return 'OK', 200
 
+# Main function to set up the Telegram bot and Flask app
 def main():
-    global application  # Declare global variable
-    # Initialize the Telegram application
+    global application  # Declare as global to use in other parts of the code
+
+    # Create the Telegram application
     application = Application.builder().token(TELEGRAM_API_TOKEN).build()
 
-    # Add command and message handlers
+    # Add handlers for Telegram commands and messages
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Set webhook
+    # Set up the webhook
     set_webhook()
 
+# Run the Flask and Telegram bot
 if __name__ == '__main__':
-    # Start the Flask app and set up the Telegram bot
+    # Run the bot setup
     main()
 
-    # Run the Flask server
-    app.run(host="0.0.0.0", port=int(os.getenv('PORT', 10000)))
+    # Start the Flask server
+    app.run(host="0.0.0.0", port=int(os.getenv('PORT', 10000)))  # Default to port 10000 if not set
