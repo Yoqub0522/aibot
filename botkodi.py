@@ -100,4 +100,4 @@ if __name__ == '__main__':
     main()
 
     # Start the Flask server
-    app.run(host="0.0.0.0", port=int(os.getenv('PORT', https://aibot-9htc.onrender.com)))  # Default to port 10000 if not set
+    app.run(host="0.0.0.0", port=int(os.getenv('PORT', 8080)))  # Default to port 10000 if not set
