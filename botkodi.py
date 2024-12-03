@@ -6,6 +6,7 @@ from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 import logging
+import json
 
 # Load environment variables from the .env file (if running locally)
 load_dotenv()
@@ -63,7 +64,8 @@ async def start(update: Update, context: CallbackContext) -> None:
 
 # Function to set up the webhook for Telegram
 def set_webhook():
-    WEBHOOK_URL = f'https://your-flask-app-url/{TELEGRAM_API_TOKEN}'  # Replace with your actual Flask app URL
+    # Replace with your actual Flask app URL
+    WEBHOOK_URL = f'https://your-flask-app-url/{TELEGRAM_API_TOKEN}'  
     set_webhook_url = f'https://api.telegram.org/bot{TELEGRAM_API_TOKEN}/setWebhook?url={WEBHOOK_URL}'
     response = requests.get(set_webhook_url)
     print(f"Webhook sozlash javobi: {response.text}")  # Response from the setWebhook call
