@@ -5,11 +5,13 @@ import json
 from flask import Flask, request
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
-import logging
 
-# OpenAI API key and Telegram bot API token
-openai.api_key = os.getenv('OPENAI_API_KEY')
-TELEGRAM_API_TOKEN = os.getenv('TELEGRAM_API_TOKEN')
+# OpenAI API key and Telegram API token
+openai.api_key = os.getenv('sk-svcacct-CndFXdkK-T2ZpdszKqvFchzC-U2TokrbmHcojRZBHkZgNTUGnBTVjUWdLjkjQkLUT3BlbkFJsn0V3cPzlUMhmVITJfv0pMNc2w2hXV72pVbWT3Dyu8gh75LtPlmEP9A_oZEA_vkA')
+TELEGRAM_API_TOKEN = os.getenv('7761761615:AAGsS0KKBO8T-MVBsfsHHHMC6BMoqY4OTts')
+
+if TELEGRAM_API_TOKEN is None:
+    raise ValueError("Telegram API token is not set!")
 
 # Flask app initialization
 app = Flask(__name__)
@@ -51,7 +53,7 @@ async def start(update: Update, context: CallbackContext) -> None:
 
 # Set webhook for Telegram
 def set_webhook():
-    WEBHOOK_URL = f'https://telegram-bot-ef1y.onrender.com/{TELEGRAM_API_TOKEN}'
+    WEBHOOK_URL = f'https://your-flask-server-url.com/{TELEGRAM_API_TOKEN}'
     set_webhook_url = f'https://api.telegram.org/bot{TELEGRAM_API_TOKEN}/setWebhook?url={WEBHOOK_URL}'
     response = requests.get(set_webhook_url)
     print(f"Webhook sozlash javobi: {response.text}")  # Check response from Telegram
