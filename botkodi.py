@@ -1,5 +1,4 @@
 import os
-import openai
 from dotenv import load_dotenv
 import requests
 from flask import Flask, request
@@ -9,95 +8,96 @@ import logging
 import json
 import asyncio
 
-# Load environment variables from the .env file (if running locally)
+# Load environment variables
 load_dotenv()
 
-# Retrieve the API tokens from environment variables
+# Retrieve API tokens
 TELEGRAM_API_TOKEN = os.getenv('TELEGRAM_API_TOKEN')
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+GEMINI_AI_KEY = os.getenv('GEMINI_AI_KEY', 'AIzaSyDU7-n3OXubckqG2DEzz9LLSelzTtmpHoY')
 
-# Ensure the environment variables are set
-if TELEGRAM_API_TOKEN is None:
+if not TELEGRAM_API_TOKEN:
     raise ValueError("Telegram API token is not set!")
-if OPENAI_API_KEY is None:
-    raise ValueError("OpenAI API key is not set!")
-
-# Set OpenAI API key
-openai.api_key = OPENAI_API_KEY
+if not GEMINI_AI_KEY:
+    raise ValueError("Gemini AI key is not set!")
 
 # Initialize Flask app
 app = Flask(__name__)
 
-# Initialize Telegram application
-application = None  # Will be set in the main function
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Flask endpoint to check if the server is running
+# Flask health check endpoint
 @app.route('/')
 def home():
     return "Salom! Flask serveri ishlamoqda."
 
-# Function to generate a response from OpenAI's API
-def generate_openai_response(prompt: str) -> str:
+# Generate a response from Gemini AI
+def generate_gemini_response(prompt: str) -> str:
     try:
-        response = openai.Completion.create(
-            engine="text-davinci-003",  # You can use other models like 'gpt-3.5-turbo' if needed
-            prompt=prompt,
-            max_tokens=150
-        )
-        return response.choices[0].text.strip()
+        url = "https://gemini-api-endpoint.example.com/v1/completions"  # Replace with the correct endpoint
+        headers = {
+            "Authorization": f"Bearer {GEMINI_AI_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "prompt": prompt,
+            "maxTokens": 150
+        }
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()  # Raise an error for HTTP issues
+        data = response.json()
+        return data.get("choices", [{}])[0].get("text", "Javobni olishda xatolik yuz berdi.")
     except Exception as e:
-        return f"Xatolik yuz berdi: {str(e)}"
+        logger.error(f"Error generating Gemini response: {e}")
+        return "Xatolik yuz berdi. Iltimos, keyinroq urinib ko'ring."
 
-# Handler to process incoming messages from Telegram users
+# Telegram message handler
 async def handle_message(update: Update, context: CallbackContext) -> None:
-    user_message = update.message.text  # User's message
-    print(f"Foydalanuvchidan xabar: {user_message}")
-    
-    # Get response from OpenAI
-    openai_response = generate_openai_response(user_message)
-    
-    # Send OpenAI response to the user
-    await update.message.reply_text(openai_response)
+    user_message = update.message.text
+    logger.info(f"Received message: {user_message}")
+    gemini_response = generate_gemini_response(user_message)
+    await update.message.reply_text(gemini_response)
 
-# Command handler for the /start command
+# Telegram /start command handler
 async def start(update: Update, context: CallbackContext) -> None:
-    await update.message.reply_text("Salom! Men OpenAI yordamida ishlovchi botman. Savollarni berishingiz mumkin.")
+    await update.message.reply_text("Salom! Men Gemini AI yordamida ishlovchi botman. Savollarni berishingiz mumkin.")
 
-# Function to set up the webhook for Telegram
+# Set up Telegram webhook
 def set_webhook():
-    # Replace with your actual Flask app URL from ngrok or your hosted app
-    WEBHOOK_URL = f'https://your-ngrok-url.ngrok.io/{TELEGRAM_API_TOKEN}'  # Example using ngrok URL
-    set_webhook_url = f'https://api.telegram.org/bot{TELEGRAM_API_TOKEN}/setWebhook?url={WEBHOOK_URL}'
-    response = requests.get(set_webhook_url)
-    print(f"Webhook sozlash javobi: {response.text}")  # Response from the setWebhook call
+    ngrok_url = os.getenv('NGROK_URL')
+    if not ngrok_url:
+        raise ValueError("NGROK_URL environment variable is not set!")
 
-# Webhook endpoint for handling Telegram updates
+    webhook_url = f'{ngrok_url}/{TELEGRAM_API_TOKEN}'
+    set_webhook_url = f'https://api.telegram.org/bot{TELEGRAM_API_TOKEN}/setWebhook?url={webhook_url}'
+    
+    response = requests.get(set_webhook_url)
+    logger.info(f"Webhook setup response: {response.text}")
+
+# Telegram webhook endpoint
 @app.route(f'/{TELEGRAM_API_TOKEN}', methods=['POST'])
 def webhook():
-    json_str = request.get_data().decode('UTF-8')  # Incoming JSON data
-    update = Update.de_json(json.loads(json_str), None)  # Convert JSON to Python object
-    if application:
-        asyncio.run(application.process_update(update))  # Process the update with the Telegram bot application
-    return 'OK', 200
+    try:
+        json_str = request.get_data().decode('UTF-8')
+        update = Update.de_json(json.loads(json_str), None)
+        if application:
+            asyncio.run(application.process_update(update))
+        return 'OK', 200
+    except Exception as e:
+        logger.error(f"Error processing webhook update: {e}")
+        return 'Error', 500
 
-# Main function to set up the Telegram bot and Flask app
+# Main function
 def main():
-    global application  # Declare as global to use in other parts of the code
-
-    # Create the Telegram application
+    global application
     application = Application.builder().token(TELEGRAM_API_TOKEN).build()
-
-    # Add handlers for Telegram commands and messages
+    
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
-    # Set up the webhook
+    
     set_webhook()
 
-# Run the Flask and Telegram bot
 if __name__ == '__main__':
-    # Run the bot setup
     main()
-
-    # Start the Flask server
-    app.run(host="0.0.0.0", port=int(os.getenv('PORT', 8080)))  # Default to port 10000 if not set
+    app.run(host="0.0.0.0", port=int(os.getenv('PORT', 8080)))
